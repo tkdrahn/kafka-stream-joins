@@ -1,0 +1,11 @@
+{
+    "type": "record",
+    "name": "PersonKey",
+    "namespace": "com.objectpartners.kafka.streamjoin.model",
+    "fields": [
+        {
+            "name": "personId",
+            "type": "string"
+        }
+    ]
+}

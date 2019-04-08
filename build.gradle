@@ -1,8 +1,11 @@
 buildscript {
     repositories {
         mavenCentral()
+        maven { url 'https://plugins.gradle.org/m2' }
+        maven { url 'https://packages.confluent.io/maven/' }
     }
     dependencies {
+        classpath("com.commercehub.gradle.plugin:gradle-avro-plugin:${avroPluginVersion}")
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
     }
 }
@@ -13,6 +16,7 @@ allprojects {
 
     repositories {
         mavenCentral()
+        maven { url 'https://packages.confluent.io/maven/' }
     }
 
     group = 'com.objectpartners'
@@ -22,15 +26,20 @@ allprojects {
 
 subprojects {
     dependencies {
+        if (project.name != 'avro-model') {
+            compile project(':avro-model')
+        }
+
         compile "com.google.guava:guava:${guavaVersion}"
         compile "org.apache.kafka:kafka-clients:${kafkaStreamsVersion}"
         compile "org.apache.kafka:kafka-streams:${kafkaStreamsVersion}"
+        compile "org.codehaus.groovy:groovy-all:${groovyVersion}"
         compile "org.springframework.boot:spring-boot-starter:${springBootVersion}"
         compile "org.springframework.boot:spring-boot-starter-logging:${springBootVersion}"
+        compile "io.confluent:kafka-streams-avro-serde:${confluentVersion}"
 
         testCompile "org.apache.kafka:kafka-streams-test-utils:${kafkaStreamsVersion}"
         testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
-        testCompile "org.codehaus.groovy:groovy-all:${groovyVersion}"
         testCompile "org.spockframework:spock-core:1.2-groovy-2.4"
     }
 }

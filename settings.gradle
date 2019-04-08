@@ -1,3 +1,5 @@
 rootProject.name = 'kafka-stream-joins'
 
-include ':stream-join-single-topic'
+include ':avro-model',
+        ':event-generator',
+        ':stream-join-single-topic'

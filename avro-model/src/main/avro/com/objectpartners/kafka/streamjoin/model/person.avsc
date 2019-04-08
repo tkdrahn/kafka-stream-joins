@@ -1,0 +1,22 @@
+{
+    "type": "record",
+    "name": "Person",
+    "namespace": "com.objectpartners.kafka.streamjoin.model",
+    "fields": [
+        {
+            "name": "firstName",
+            "type": [
+                "null",
+                "string"
+            ],
+            "default": null
+        },
+        {
+            "name": "emails",
+            "type": {
+                "type": "array",
+                "items": "com.objectpartners.kafka.streamjoin.model.Email"
+            }
+        }
+    ]
+}

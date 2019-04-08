@@ -1,0 +1,12 @@
+apply plugin: 'application'
+apply plugin: 'groovy'
+apply plugin: 'org.springframework.boot'
+
+mainClassName = 'com.objectpartners.kafka.streamjoin.generator.EventGenerator'
+
+run {
+    systemProperties = System.properties
+}
+
+dependencies {
+}
