@@ -1,0 +1,11 @@
+apply plugin: 'application'
+apply plugin: 'org.springframework.boot'
+
+mainClassName = 'com.objectpartners.kdemo.favoritecolor.FavoriteColorStream'
+
+run {
+    systemProperties = System.properties
+}
+
+dependencies {
+}
