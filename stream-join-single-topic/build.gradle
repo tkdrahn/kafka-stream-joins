@@ -1,7 +1,7 @@
 apply plugin: 'application'
 apply plugin: 'org.springframework.boot'
 
-mainClassName = 'com.objectpartners.kdemo.favoritecolor.FavoriteColorStream'
+mainClassName = 'com.objectpartners.kafka.streamjoin.singletopic.SingleTopicJoinStream'
 
 run {
     systemProperties = System.properties
