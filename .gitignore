@@ -1,0 +1,9 @@
+.gradle
+build/
+
+# Avoid ignoring Gradle wrapper jar (jars ignored by default)
+!gradle-wrapper.jar
+
+*.iml
+.idea/
+out/

@@ -1,0 +1,3 @@
+rootProject.name = 'kafka-stream-joins'
+
+include ':stream-join-single-topic'

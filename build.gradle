@@ -1,0 +1,36 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+allprojects {
+    apply plugin: 'groovy'
+    apply plugin: 'io.spring.dependency-management'
+
+    repositories {
+        mavenCentral()
+    }
+
+    group = 'com.objectpartners'
+    version = '0.0.1-SNAPSHOT'
+    sourceCompatibility = 1.8
+}
+
+subprojects {
+    dependencies {
+        compile "com.google.guava:guava:${guavaVersion}"
+        compile "org.apache.kafka:kafka-clients:${kafkaStreamsVersion}"
+        compile "org.apache.kafka:kafka-streams:${kafkaStreamsVersion}"
+        compile "org.springframework.boot:spring-boot-starter:${springBootVersion}"
+        compile "org.springframework.boot:spring-boot-starter-logging:${springBootVersion}"
+
+        testCompile "org.apache.kafka:kafka-streams-test-utils:${kafkaStreamsVersion}"
+        testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+        testCompile "org.codehaus.groovy:groovy-all:${groovyVersion}"
+        testCompile "org.spockframework:spock-core:1.2-groovy-2.4"
+    }
+}
