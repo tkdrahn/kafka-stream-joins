@@ -62,6 +62,7 @@ public class KtableJoinStream implements CommandLineRunner {
                 (k, v) -> "home".equalsIgnoreCase(v.getType())
         );
 
+        // NOTE - you could also create an aggregate on the email topic and push the result to an aggregated-email-by-person-topic
         emailTypeStreams[0].selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build()).to("office-email-by-person-topic");
         emailTypeStreams[1].selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build()).to("home-email-by-person-topic");
 
