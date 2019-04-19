@@ -1,0 +1,11 @@
+apply plugin: 'application'
+apply plugin: 'org.springframework.boot'
+
+mainClassName = 'com.objectpartners.kafka.streamjoin.ktable.KtableJoinStream'
+
+run {
+    systemProperties = System.properties
+}
+
+dependencies {
+}

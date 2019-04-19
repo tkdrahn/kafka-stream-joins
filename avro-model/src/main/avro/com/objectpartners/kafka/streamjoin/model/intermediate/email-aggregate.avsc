@@ -1,0 +1,23 @@
+{
+    "type": "record",
+    "name": "EmailAggregate",
+    "namespace": "com.objectpartners.kafka.streamjoin.model.intermediate",
+    "fields": [
+        {
+            "name": "officeEmail",
+            "type": [
+                "null",
+                "string"
+            ],
+            "default": null
+        },
+        {
+            "name": "homeEmail",
+            "type": [
+                "null",
+                "string"
+            ],
+            "default": null
+        }
+    ]
+}

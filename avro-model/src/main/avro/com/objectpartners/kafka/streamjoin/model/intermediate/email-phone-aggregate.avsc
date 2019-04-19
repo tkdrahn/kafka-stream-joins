@@ -1,0 +1,23 @@
+{
+    "type": "record",
+    "name": "EmailPhoneAggregate",
+    "namespace": "com.objectpartners.kafka.streamjoin.model.intermediate",
+    "fields": [
+        {
+            "name": "email",
+            "type": [
+                "null",
+                "com.objectpartners.kafka.streamjoin.model.intermediate.EmailAggregate"
+            ],
+            "default": null
+        },
+        {
+            "name": "telephone",
+            "type": [
+                "null",
+                "com.objectpartners.kafka.streamjoin.model.input.Telephone"
+            ],
+            "default": null
+        }
+    ]
+}
