@@ -2,8 +2,10 @@ package com.objectpartners.kafka.streamjoin.singletopic;
 
 import com.objectpartners.kafka.streamjoin.model.input.Email;
 import com.objectpartners.kafka.streamjoin.model.input.EmailKey;
+import com.objectpartners.kafka.streamjoin.model.input.EmailType;
 import com.objectpartners.kafka.streamjoin.model.input.PersonName;
 import com.objectpartners.kafka.streamjoin.model.input.PersonNameKey;
+import com.objectpartners.kafka.streamjoin.model.input.PhoneType;
 import com.objectpartners.kafka.streamjoin.model.input.Telephone;
 import com.objectpartners.kafka.streamjoin.model.input.TelephoneKey;
 import com.objectpartners.kafka.streamjoin.model.output.Person;
@@ -81,16 +83,16 @@ public class SingleTopicJoinStream implements CommandLineRunner {
                             if (newRecord instanceof Email) {
                                 Email newEmail = (Email) newRecord;
 
-                                if ("office".equalsIgnoreCase(newEmail.getType())) {
+                                if (newEmail.getType() == EmailType.OFFICE) {
                                     aggregate.setOfficeEmail(newEmail.getAddress());
                                 }
-                                if ("home".equalsIgnoreCase(newEmail.getType())) {
+                                if (newEmail.getType() == EmailType.HOME) {
                                     aggregate.setHomeEmail(newEmail.getAddress());
                                 }
                             } else if (newRecord instanceof Telephone) {
                                 Telephone newTelephone = (Telephone) newRecord;
 
-                                if ("cell".equalsIgnoreCase(newTelephone.getType())) {
+                                if (newTelephone.getType() == PhoneType.CELL) {
                                     aggregate.setCellPhoneNumber(newTelephone.getPhoneNumber());
                                 }
                             } else if (newRecord instanceof PersonName) {

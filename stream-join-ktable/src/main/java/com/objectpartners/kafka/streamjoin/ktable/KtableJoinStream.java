@@ -2,6 +2,7 @@ package com.objectpartners.kafka.streamjoin.ktable;
 
 import com.objectpartners.kafka.streamjoin.model.input.Email;
 import com.objectpartners.kafka.streamjoin.model.input.EmailKey;
+import com.objectpartners.kafka.streamjoin.model.input.EmailType;
 import com.objectpartners.kafka.streamjoin.model.input.PersonName;
 import com.objectpartners.kafka.streamjoin.model.input.PersonNameKey;
 import com.objectpartners.kafka.streamjoin.model.input.Telephone;
@@ -58,8 +59,8 @@ public class KtableJoinStream implements CommandLineRunner {
 
         KStream<EmailKey, Email> emailStream = builder.stream("email-topic");
         KStream<EmailKey, Email>[] emailTypeStreams = emailStream.branch(
-                (k, v) -> "office".equalsIgnoreCase(v.getType()),
-                (k, v) -> "home".equalsIgnoreCase(v.getType())
+                (k, v) -> v.getType() == EmailType.OFFICE,
+                (k, v) -> v.getType() == EmailType.HOME
         );
 
         // NOTE - you could also create an aggregate on the email topic and push the result to an aggregated-email-by-person-topic

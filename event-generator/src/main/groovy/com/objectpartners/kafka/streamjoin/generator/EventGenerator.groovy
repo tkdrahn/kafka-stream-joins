@@ -1,53 +1,52 @@
 package com.objectpartners.kafka.streamjoin.generator
 
-import com.objectpartners.kafka.streamjoin.model.input.Email
-import com.objectpartners.kafka.streamjoin.model.input.EmailKey
-import com.objectpartners.kafka.streamjoin.model.input.PersonName
-import com.objectpartners.kafka.streamjoin.model.input.PersonNameKey
-import com.objectpartners.kafka.streamjoin.model.input.Telephone
-import com.objectpartners.kafka.streamjoin.model.input.TelephoneKey
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerializer
+import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerConfig
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.context.annotation.Bean
 
 @SpringBootApplication
-class EventGenerator implements CommandLineRunner {
+class EventGenerator {
 
     static void main(String[] args) {
         SpringApplication.run(EventGenerator, args);
     }
 
-    @Override
-    void run(String... args) throws Exception {
-        Producer producer = new KafkaProducer<EmailKey, Email>(buildConfig());
+//    @Override
+//    void run(String... args) throws Exception {
+//        Producer producer = new KafkaProducer<EmailKey, Email>(buildConfig());
+//
+//        EmailKey emailKey = EmailKey.newBuilder().setEmailId('email-1').setPersonId('person-1').build()
+//        Email emailValue = Email.newBuilder().setAddress('tim.drahn@objectpartners.com').setType('office').build()
+//
+//        EmailKey emailKey2 = EmailKey.newBuilder().setEmailId('email-2').setPersonId('person-1').build()
+//        Email emailValue2 = Email.newBuilder().setAddress('tim.drahn@personal.com').setType('home').build()
+//
+//        TelephoneKey phoneKey = TelephoneKey.newBuilder().setPersonId('person-1').setTelephoneId('phone-1').build()
+//        Telephone phoneValue = Telephone.newBuilder().setType('cell').setPhoneNumber('123-456-7890').build()
+//
+//        PersonNameKey nameKey = PersonNameKey.newBuilder().setPersonId('person-1').build()
+//        PersonName nameValue = PersonName.newBuilder().setFirstName('Test').setLastName('Person').build()
+//
+//        ProducerRecord<EmailKey, Email> emailRecord = new ProducerRecord<>('email-topic', emailKey, emailValue)
+//        ProducerRecord<EmailKey, Email> emailRecord2 = new ProducerRecord<>('email-topic', emailKey2, emailValue2)
+//        ProducerRecord<TelephoneKey, Telephone> phoneRecord = new ProducerRecord<>('phone-topic', phoneKey, phoneValue)
+//        ProducerRecord<PersonNameKey, PersonName> nameRecord = new ProducerRecord<>('name-topic', nameKey, nameValue)
+//
+//        producer.send(emailRecord).get()
+//        producer.send(emailRecord2).get()
+//        producer.send(phoneRecord).get()
+//        producer.send(nameRecord).get()
+//    }
 
-        EmailKey emailKey = EmailKey.newBuilder().setEmailId('email-1').setPersonId('person-1').build()
-        Email emailValue = Email.newBuilder().setAddress('tim.drahn@objectpartners.com').setType('office').build()
-
-        EmailKey emailKey2 = EmailKey.newBuilder().setEmailId('email-2').setPersonId('person-1').build()
-        Email emailValue2 = Email.newBuilder().setAddress('tim.drahn@personal.com').setType('home').build()
-
-        TelephoneKey phoneKey = TelephoneKey.newBuilder().setPersonId('person-1').setTelephoneId('phone-1').build()
-        Telephone phoneValue = Telephone.newBuilder().setType('cell').setPhoneNumber('123-456-7890').build()
-
-        PersonNameKey nameKey = PersonNameKey.newBuilder().setPersonId('person-1').build()
-        PersonName nameValue = PersonName.newBuilder().setFirstName('Test').setLastName('Person').build()
-
-        ProducerRecord<EmailKey, Email> emailRecord = new ProducerRecord<>('email-topic', emailKey, emailValue)
-        ProducerRecord<EmailKey, Email> emailRecord2 = new ProducerRecord<>('email-topic', emailKey2, emailValue2)
-        ProducerRecord<TelephoneKey, Telephone> phoneRecord = new ProducerRecord<>('phone-topic', phoneKey, phoneValue)
-        ProducerRecord<PersonNameKey, PersonName> nameRecord = new ProducerRecord<>('name-topic', nameKey, nameValue)
-
-        producer.send(emailRecord).get()
-        producer.send(emailRecord2).get()
-        producer.send(phoneRecord).get()
-        producer.send(nameRecord).get()
+    @Bean
+    Producer producer() {
+        return new KafkaProducer<SpecificRecord, SpecificRecord>(buildConfig());
     }
 
     private static Properties buildConfig() {

@@ -1,0 +1,8 @@
+server:
+  port: 8180
+management:
+  server:
+    port: 8180
+  endpoints.web.exposure.include: 'info,health,mappings'
+
+spring.groovy.template.check-template-location: false

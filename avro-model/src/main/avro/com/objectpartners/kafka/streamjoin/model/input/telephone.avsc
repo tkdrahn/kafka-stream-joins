@@ -9,7 +9,11 @@
         },
         {
             "name": "type",
-            "type": "string"
+            "type": {
+                "type": "enum",
+                "name": "PhoneType",
+                "symbols": ["CELL", "LANDLINE"]
+            }
         }
     ]
 }
