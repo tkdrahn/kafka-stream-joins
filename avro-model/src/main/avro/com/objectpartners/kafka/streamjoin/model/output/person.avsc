@@ -1,0 +1,47 @@
+{
+    "type": "record",
+    "name": "Person",
+    "namespace": "com.objectpartners.kafka.streamjoin.model.output",
+    "fields": [
+        {
+            "name": "firstName",
+            "type": [
+                "null",
+                "string"
+            ],
+            "default": null
+        },
+        {
+            "name": "lastName",
+            "type": [
+                "null",
+                "string"
+            ],
+            "default": null
+        },
+        {
+            "name": "cellPhoneNumber",
+            "type": [
+                "null",
+                "string"
+            ],
+            "default": null
+        },
+        {
+            "name": "homeEmail",
+            "type": [
+                "null",
+                "string"
+            ],
+            "default": null
+        },
+        {
+            "name": "officeEmail",
+            "type": [
+                "null",
+                "string"
+            ],
+            "default": null
+        }
+    ]
+}

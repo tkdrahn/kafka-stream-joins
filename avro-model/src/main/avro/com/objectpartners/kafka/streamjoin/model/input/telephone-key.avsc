@@ -1,0 +1,15 @@
+{
+    "type": "record",
+    "name": "TelephoneKey",
+    "namespace": "com.objectpartners.kafka.streamjoin.model.input",
+    "fields": [
+        {
+            "name": "telephoneId",
+            "type": "string"
+        },
+        {
+            "name": "personId",
+            "type": "string"
+        }
+    ]
+}

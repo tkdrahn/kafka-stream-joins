@@ -1,7 +1,11 @@
 package com.objectpartners.kafka.streamjoin.generator
 
-import com.objectpartners.kafka.streamjoin.model.Email
-import com.objectpartners.kafka.streamjoin.model.EmailKey
+import com.objectpartners.kafka.streamjoin.model.input.Email
+import com.objectpartners.kafka.streamjoin.model.input.EmailKey
+import com.objectpartners.kafka.streamjoin.model.input.PersonName
+import com.objectpartners.kafka.streamjoin.model.input.PersonNameKey
+import com.objectpartners.kafka.streamjoin.model.input.Telephone
+import com.objectpartners.kafka.streamjoin.model.input.TelephoneKey
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerializer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -23,10 +27,27 @@ class EventGenerator implements CommandLineRunner {
     void run(String... args) throws Exception {
         Producer producer = new KafkaProducer<EmailKey, Email>(buildConfig());
 
-        EmailKey key = EmailKey.newBuilder().setEmailId('email-1').setPersonId('person-1').build()
-        Email value = Email.newBuilder().setAddress('tim.drahn@objectpartners.com').setType('work').build()
-        ProducerRecord<EmailKey, Email> record = new ProducerRecord<>('email-topic', key, value)
-        producer.send(record).get()
+        EmailKey emailKey = EmailKey.newBuilder().setEmailId('email-1').setPersonId('person-1').build()
+        Email emailValue = Email.newBuilder().setAddress('tim.drahn@objectpartners.com').setType('office').build()
+
+        EmailKey emailKey2 = EmailKey.newBuilder().setEmailId('email-2').setPersonId('person-1').build()
+        Email emailValue2 = Email.newBuilder().setAddress('tim.drahn@personal.com').setType('home').build()
+
+        TelephoneKey phoneKey = TelephoneKey.newBuilder().setPersonId('person-1').setTelephoneId('phone-1').build()
+        Telephone phoneValue = Telephone.newBuilder().setType('cell').setPhoneNumber('123-456-7890').build()
+
+        PersonNameKey nameKey = PersonNameKey.newBuilder().setPersonId('person-1').build()
+        PersonName nameValue = PersonName.newBuilder().setFirstName('Test').setLastName('Person').build()
+
+        ProducerRecord<EmailKey, Email> emailRecord = new ProducerRecord<>('email-topic', emailKey, emailValue)
+        ProducerRecord<EmailKey, Email> emailRecord2 = new ProducerRecord<>('email-topic', emailKey2, emailValue2)
+        ProducerRecord<TelephoneKey, Telephone> phoneRecord = new ProducerRecord<>('phone-topic', phoneKey, phoneValue)
+        ProducerRecord<PersonNameKey, PersonName> nameRecord = new ProducerRecord<>('name-topic', nameKey, nameValue)
+
+        producer.send(emailRecord).get()
+        producer.send(emailRecord2).get()
+        producer.send(phoneRecord).get()
+        producer.send(nameRecord).get()
     }
 
     private static Properties buildConfig() {
@@ -38,6 +59,8 @@ class EventGenerator implements CommandLineRunner {
         config.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 1);
         config.put(ProducerConfig.RETRIES_CONFIG, "2147483647");
         config.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
+        config.put(AbstractKafkaAvroSerDeConfig.KEY_SUBJECT_NAME_STRATEGY, "io.confluent.kafka.serializers.subject.TopicRecordNameStrategy");
+        config.put(AbstractKafkaAvroSerDeConfig.VALUE_SUBJECT_NAME_STRATEGY, "io.confluent.kafka.serializers.subject.TopicRecordNameStrategy");
 
         return config;
     }

@@ -1,7 +1,7 @@
 {
     "type": "record",
     "name": "EmailKey",
-    "namespace": "com.objectpartners.kafka.streamjoin.model",
+    "namespace": "com.objectpartners.kafka.streamjoin.model.input",
     "fields": [
         {
             "name": "emailId",

@@ -1,7 +1,7 @@
 {
     "type": "record",
-    "name": "PersonKey",
-    "namespace": "com.objectpartners.kafka.streamjoin.model",
+    "name": "PersonNameKey",
+    "namespace": "com.objectpartners.kafka.streamjoin.model.input",
     "fields": [
         {
             "name": "personId",

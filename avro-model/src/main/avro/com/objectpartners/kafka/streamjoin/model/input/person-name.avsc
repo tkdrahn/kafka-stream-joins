@@ -1,0 +1,15 @@
+{
+    "type": "record",
+    "name": "PersonName",
+    "namespace": "com.objectpartners.kafka.streamjoin.model.input",
+    "fields": [
+        {
+            "name": "firstName",
+            "type": "string"
+        },
+        {
+            "name": "lastName",
+            "type": "string"
+        }
+    ]
+}
