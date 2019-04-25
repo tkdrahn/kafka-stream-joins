@@ -76,29 +76,32 @@ public class KtableJoinStream implements CommandLineRunner {
         KStream<EmailKey, Email> emailStream = builder.stream("email-topic");
         KStream<TelephoneKey, Telephone> phoneStream = builder.stream("phone-topic");
 
-        // branch emails into separate topics for each unique key, otherwise our join later will fail
+        // CO-PARTITION INPUT TOPICS
+        // naive approach - this won't work properly as different phone types will "overwrite" each other
+        phoneStream
+                .selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build())
+                .to("phone-by-person-topic");
+
+        // branch emails into separate topics for each unique key, so we can build a ktable without losing data
         // alternatively, create an aggregation on the email topic and push the result to a single aggregated-email-by-person-topic
-        KStream<EmailKey, Email>[] emailTypeStreams = emailStream.branch(
-                (k, v) -> v.getType() == EmailType.OFFICE,
-                (k, v) -> v.getType() == EmailType.HOME
+        KStream<EmailKey, Email>[] emailByTypeStreams = emailStream.branch(
+                (k, v) -> v.getType() == EmailType.HOME,
+                (k, v) -> v.getType() == EmailType.OFFICE
         );
+        emailByTypeStreams[0]
+                .selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build())
+                .to("home-email-by-person-topic");
+        emailByTypeStreams[1]
+                .selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build())
+                .to("office-email-by-person-topic");
 
-        // NOTE - need to branch this out by unique key, otherwise our join later will only get the latest value for each person (even if the emails have different types)
-        // NOTE - you could also create an aggregate on the email topic and push the result to an aggregated-email-by-person-topic
-        emailTypeStreams[0].selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build()).to("office-email-by-person-topic");
-        emailTypeStreams[1].selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build()).to("home-email-by-person-topic");
-
-        // NOTE - this won't work properly as different phone types will "overwrite" each other
-        phoneStream.selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build()).to("phone-by-person-topic");
-
-        // NOTE - no need for a name-by-person-topic
-
-        KTable<PersonKey, Email> officeEmailTable = builder.table("office-email-by-person-topic");
+        // BUILD KTABLES
         KTable<PersonKey, Email> homeEmailTable = builder.table("home-email-by-person-topic");
+        KTable<PersonKey, Email> officeEmailTable = builder.table("office-email-by-person-topic");
         KTable<PersonKey, Telephone> phoneTable = builder.table("phone-by-person-topic");
         KTable<PersonKey, PersonName> nameTable = builder.table("name-topic");
 
-        //
+        // APPLY JOINS
         KTable<PersonKey, EmailAggregate> emailAggregateTable = officeEmailTable.outerJoin(
                 homeEmailTable,
                 // aggregator
@@ -143,5 +146,6 @@ public class KtableJoinStream implements CommandLineRunner {
         log.info(topology.describe().toString());
         log.info("---END TOPOLOGY---");
     }
+
 }
 
