@@ -76,51 +76,57 @@ public class SingleTopicJoinStream implements CommandLineRunner {
     public static Topology createTopology() {
         StreamsBuilder builder = new StreamsBuilder();
 
+        // rekey input streams by personId
         KStream<EmailKey, Email> emailStream = builder.stream("email-topic");
+        KStream<TelephoneKey, Telephone> phoneStream = builder.stream("phone-topic");
+        KStream<PersonNameKey, PersonName> nameStream = builder.stream("name-topic");
+
         emailStream
                 .selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build())
                 .to("person-aggregate-topic");
 
-        KStream<TelephoneKey, Telephone> phoneStream = builder.stream("phone-topic");
         phoneStream
                 .selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build())
                 .to("person-aggregate-topic");
 
-        KStream<PersonNameKey, PersonName> nameStream = builder.stream("name-topic");
         nameStream
                 .selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build())
                 .to("person-aggregate-topic");
 
-        KStream<PersonKey, SpecificRecord> personBuilderStream = builder.stream("person-aggregate-topic");
-        personBuilderStream
-                .peek((k, v) -> log.info("aggregating record for person: {} of type: {}",
-                        k.getPersonId(), v.getClass().getSimpleName()))
+
+        // create Person aggregation
+        KStream<PersonKey, SpecificRecord> personAggregationStream = builder.stream("person-aggregate-topic");
+        personAggregationStream
                 .groupByKey()
                 .aggregate(
                         // initializer
                         () -> Person.newBuilder().build(),
                         // aggregator
-                        (personKey, newRecord, aggregate) -> {
-                            if (newRecord instanceof Email) {
-                                Email newEmail = (Email) newRecord;
+                        (personKey, incomingRecord, aggregate) -> {
 
+                            if (incomingRecord instanceof Email) {
+                                Email newEmail = (Email) incomingRecord;
                                 if (newEmail.getType() == EmailType.OFFICE) {
                                     aggregate.setOfficeEmail(newEmail.getAddress());
                                 }
                                 if (newEmail.getType() == EmailType.HOME) {
                                     aggregate.setHomeEmail(newEmail.getAddress());
                                 }
-                            } else if (newRecord instanceof Telephone) {
-                                Telephone newTelephone = (Telephone) newRecord;
+                            }
 
+                            if (incomingRecord instanceof Telephone) {
+                                Telephone newTelephone = (Telephone) incomingRecord;
                                 if (newTelephone.getType() == PhoneType.CELL) {
                                     aggregate.setCellPhoneNumber(newTelephone.getPhoneNumber());
                                 }
-                            } else if (newRecord instanceof PersonName) {
-                                PersonName personName = (PersonName) newRecord;
+                            }
+
+                            if (incomingRecord instanceof PersonName) {
+                                PersonName personName = (PersonName) incomingRecord;
                                 aggregate.setFirstName(personName.getFirstName());
                                 aggregate.setLastName(personName.getLastName());
                             }
+
                             return aggregate;
                         }
                 )

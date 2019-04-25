@@ -29,8 +29,8 @@ class EmailController {
 
     @RequestMapping(method = RequestMethod.POST)
     String publish(@RequestBody @Valid CreateEmailRequest request) {
-        EmailKey key = EmailKey.newBuilder().setEmailId(request.getEmailId()).setPersonId(request.getPersonId()).build()
-        Email value = Email.newBuilder().setAddress(request.getAddress()).setType(EmailType.valueOf(request.getType().name())).build()
+        EmailKey key = EmailKey.newBuilder().setPersonId(request.key.personId).setType(EmailType.valueOf(request.key.type.name())).build()
+        Email value = Email.newBuilder().setAddress(request.value.address).setType(EmailType.valueOf(request.key.type.name())).build()
         RecordMetadata meta = producer.send(new ProducerRecord<SpecificRecord, SpecificRecord>('email-topic', key, value)).get()
         return meta.toString()
     }

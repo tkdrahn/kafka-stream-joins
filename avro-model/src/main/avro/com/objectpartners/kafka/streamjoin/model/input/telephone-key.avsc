@@ -4,12 +4,16 @@
     "namespace": "com.objectpartners.kafka.streamjoin.model.input",
     "fields": [
         {
-            "name": "telephoneId",
+            "name": "personId",
             "type": "string"
         },
         {
-            "name": "personId",
-            "type": "string"
+            "name": "type",
+            "type": {
+                "type": "enum",
+                "name": "PhoneType",
+                "symbols": ["CELL", "LANDLINE"]
+            }
         }
     ]
 }

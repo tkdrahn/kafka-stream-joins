@@ -28,8 +28,8 @@ class NameController {
 
     @RequestMapping(method = RequestMethod.POST)
     String publish(@RequestBody @Valid CreateNameRequest request) {
-        PersonNameKey key = PersonNameKey.newBuilder().setPersonId(request.getPersonId()).build()
-        PersonName value = PersonName.newBuilder().setFirstName(request.getFirstName()).setLastName(request.getLastName()).build()
+        PersonNameKey key = PersonNameKey.newBuilder().setPersonId(request.key.personId).build()
+        PersonName value = PersonName.newBuilder().setFirstName(request.value.firstName).setLastName(request.value.lastName).build()
         RecordMetadata meta = producer.send(new ProducerRecord<SpecificRecord, SpecificRecord>('name-topic', key, value)).get()
         return meta.toString()
     }

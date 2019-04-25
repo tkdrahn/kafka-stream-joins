@@ -4,7 +4,7 @@
     "namespace": "com.objectpartners.kafka.streamjoin.model.intermediate",
     "fields": [
         {
-            "name": "officeEmail",
+            "name": "alternateEmail",
             "type": [
                 "null",
                 "string"
@@ -13,6 +13,14 @@
         },
         {
             "name": "homeEmail",
+            "type": [
+                "null",
+                "string"
+            ],
+            "default": null
+        },
+        {
+            "name": "officeEmail",
             "type": [
                 "null",
                 "string"

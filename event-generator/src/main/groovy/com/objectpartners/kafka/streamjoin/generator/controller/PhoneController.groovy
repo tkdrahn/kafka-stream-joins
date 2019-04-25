@@ -29,8 +29,8 @@ class PhoneController {
 
     @RequestMapping(method = RequestMethod.POST)
     String publish(@RequestBody @Valid CreatePhoneRequest request) {
-        TelephoneKey key = TelephoneKey.newBuilder().setTelephoneId(request.getTelephoneId()).setPersonId(request.getPersonId()).build()
-        Telephone value = Telephone.newBuilder().setPhoneNumber(request.getPhoneNumber()).setType(PhoneType.valueOf(request.getType().name())).build()
+        TelephoneKey key = TelephoneKey.newBuilder().setPersonId(request.key.personId).setType(PhoneType.valueOf(request.key.type.name())).build()
+        Telephone value = Telephone.newBuilder().setPhoneNumber(request.value.phoneNumber).setType(PhoneType.valueOf(request.key.type.name())).build()
         RecordMetadata meta = producer.send(new ProducerRecord<SpecificRecord, SpecificRecord>('phone-topic', key, value)).get()
         return meta.toString()
     }

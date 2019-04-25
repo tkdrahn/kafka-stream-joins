@@ -4,12 +4,16 @@
     "namespace": "com.objectpartners.kafka.streamjoin.model.input",
     "fields": [
         {
-            "name": "emailId",
+            "name": "personId",
             "type": "string"
         },
         {
-            "name": "personId",
-            "type": "string"
+            "name": "type",
+            "type": {
+                "type": "enum",
+                "name": "EmailType",
+                "symbols": ["ALTERNATE", "HOME", "OFFICE"]
+            }
         }
     ]
 }

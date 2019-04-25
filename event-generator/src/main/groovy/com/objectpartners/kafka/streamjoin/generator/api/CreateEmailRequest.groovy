@@ -1,19 +1,29 @@
 package com.objectpartners.kafka.streamjoin.generator.api
 
+import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 
 class CreateEmailRequest {
 
-    @NotBlank
-    String address
-
-    @NotBlank
-    String emailId
-
-    @NotBlank
-    String personId
+    @NotNull
+    @Valid
+    CreateEmailRequestKey key
 
     @NotNull
-    ApiEmailType type
+    @Valid
+    CreateEmailRequestValue value
+
+    static class CreateEmailRequestKey {
+        @NotBlank
+        String personId
+
+        @NotNull
+        ApiEmailType type
+    }
+
+    static class CreateEmailRequestValue {
+        @NotBlank
+        String address
+    }
 }

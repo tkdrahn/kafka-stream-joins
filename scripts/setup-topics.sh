@@ -61,13 +61,6 @@ kafka-topics \
 --topic phone-by-person-topic \
 --create
 
-kafka-topics \
---zookeeper localhost:2181 \
---partitions 4 \
---replication-factor 3 \
---topic name-by-person-topic \
---create
-
 # SINGLE TOPIC JOIN
 
 kafka-topics \

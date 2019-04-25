@@ -1,15 +1,29 @@
 package com.objectpartners.kafka.streamjoin.generator.api
 
+import javax.validation.Valid
 import javax.validation.constraints.NotBlank
+import javax.validation.constraints.NotNull
 
 class CreateNameRequest {
 
-    @NotBlank
-    String firstName
+    @NotNull
+    @Valid
+    CreateNameRequestKey key
 
-    @NotBlank
-    String lastName
+    @NotNull
+    @Valid
+    CreateNameRequestValue value
 
-    @NotBlank
-    String personId
+    static class CreateNameRequestKey {
+        @NotBlank
+        String personId
+    }
+
+    static class CreateNameRequestValue {
+        @NotBlank
+        String firstName
+
+        @NotBlank
+        String lastName
+    }
 }

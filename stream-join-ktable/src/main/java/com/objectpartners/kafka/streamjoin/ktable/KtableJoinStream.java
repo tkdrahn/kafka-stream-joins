@@ -4,7 +4,7 @@ import com.objectpartners.kafka.streamjoin.model.input.Email;
 import com.objectpartners.kafka.streamjoin.model.input.EmailKey;
 import com.objectpartners.kafka.streamjoin.model.input.EmailType;
 import com.objectpartners.kafka.streamjoin.model.input.PersonName;
-import com.objectpartners.kafka.streamjoin.model.input.PersonNameKey;
+import com.objectpartners.kafka.streamjoin.model.input.PhoneType;
 import com.objectpartners.kafka.streamjoin.model.input.Telephone;
 import com.objectpartners.kafka.streamjoin.model.input.TelephoneKey;
 import com.objectpartners.kafka.streamjoin.model.intermediate.EmailAggregate;
@@ -70,11 +70,14 @@ public class KtableJoinStream implements CommandLineRunner {
         return config;
     }
 
-    // NOTES - topic for each unique key?? lots of partitions, lots of aggregates, code difficult to understand, co-partitioned topics
     public static Topology createTopology() {
         StreamsBuilder builder = new StreamsBuilder();
 
         KStream<EmailKey, Email> emailStream = builder.stream("email-topic");
+        KStream<TelephoneKey, Telephone> phoneStream = builder.stream("phone-topic");
+
+        // branch emails into separate topics for each unique key, otherwise our join later will fail
+        // alternatively, create an aggregation on the email topic and push the result to a single aggregated-email-by-person-topic
         KStream<EmailKey, Email>[] emailTypeStreams = emailStream.branch(
                 (k, v) -> v.getType() == EmailType.OFFICE,
                 (k, v) -> v.getType() == EmailType.HOME
@@ -85,18 +88,17 @@ public class KtableJoinStream implements CommandLineRunner {
         emailTypeStreams[0].selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build()).to("office-email-by-person-topic");
         emailTypeStreams[1].selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build()).to("home-email-by-person-topic");
 
-        KStream<TelephoneKey, Telephone> phoneStream = builder.stream("phone-topic");
+        // NOTE - this won't work properly as different phone types will "overwrite" each other
         phoneStream.selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build()).to("phone-by-person-topic");
 
-        KStream<PersonNameKey, PersonName> nameStream = builder.stream("name-topic");
-        nameStream.selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build()).to("name-by-person-topic");
-
+        // NOTE - no need for a name-by-person-topic
 
         KTable<PersonKey, Email> officeEmailTable = builder.table("office-email-by-person-topic");
         KTable<PersonKey, Email> homeEmailTable = builder.table("home-email-by-person-topic");
         KTable<PersonKey, Telephone> phoneTable = builder.table("phone-by-person-topic");
-        KTable<PersonKey, PersonName> nameTable = builder.table("name-by-person-topic");
+        KTable<PersonKey, PersonName> nameTable = builder.table("name-topic");
 
+        //
         KTable<PersonKey, EmailAggregate> emailAggregateTable = officeEmailTable.outerJoin(
                 homeEmailTable,
                 // aggregator
@@ -107,10 +109,15 @@ public class KtableJoinStream implements CommandLineRunner {
                                 .build()
         );
 
+        // NOTE - improper phoneTable key means we lose data (only the last record regardless of type is saved)
         KTable<PersonKey, EmailPhoneAggregate> emailPhoneAggregateTable = emailAggregateTable.outerJoin(
                 phoneTable,
                 // aggregator
-                (emailAggregate, phone) -> EmailPhoneAggregate.newBuilder().setEmail(emailAggregate).setTelephone(phone).build()
+                (emailAggregate, phone) ->
+                        EmailPhoneAggregate.newBuilder()
+                                .setEmail(emailAggregate)
+                                .setTelephone(phone != null && phone.getType() == PhoneType.CELL ? phone : null)
+                                .build()
         );
 
         KTable<PersonKey, Person> personTable = emailPhoneAggregateTable.outerJoin(

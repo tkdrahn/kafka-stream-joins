@@ -12,7 +12,7 @@
             "type": {
                 "type": "enum",
                 "name": "EmailType",
-                "symbols": ["HOME", "OFFICE"]
+                "symbols": ["ALTERNATE", "HOME", "OFFICE"]
             }
         }
     ]

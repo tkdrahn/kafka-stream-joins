@@ -1,19 +1,29 @@
 package com.objectpartners.kafka.streamjoin.generator.api
 
+import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 
 class CreatePhoneRequest {
 
-    @NotBlank
-    String phoneNumber
-
-    @NotBlank
-    String telephoneId
-
-    @NotBlank
-    String personId
+    @NotNull
+    @Valid
+    CreatePhoneRequestKey key
 
     @NotNull
-    ApiPhoneType type
+    @Valid
+    CreatePhoneRequestValue value
+
+    static class CreatePhoneRequestKey {
+        @NotBlank
+        String personId
+
+        @NotNull
+        ApiPhoneType type
+    }
+
+    static class CreatePhoneRequestValue {
+        @NotBlank
+        String phoneNumber
+    }
 }
