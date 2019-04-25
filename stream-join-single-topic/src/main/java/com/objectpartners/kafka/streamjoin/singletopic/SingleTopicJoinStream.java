@@ -52,6 +52,27 @@ public class SingleTopicJoinStream implements CommandLineRunner {
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
     }
 
+    private static Properties buildConfig() {
+        Properties config = new Properties();
+        config.put(StreamsConfig.APPLICATION_ID_CONFIG, "single-topic-join-stream");
+        config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:19092,localhost:29092,localhost:39092");
+        config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
+        config.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
+        config.put(StreamsConfig.TOPOLOGY_OPTIMIZATION, "all");
+        config.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, 3);
+        config.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0); // disable caching
+        config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        config.put(ProducerConfig.ACKS_CONFIG, "all");
+        config.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 1);
+        config.put(ProducerConfig.RETRIES_CONFIG, "2147483647");
+
+        config.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
+        config.put(AbstractKafkaAvroSerDeConfig.KEY_SUBJECT_NAME_STRATEGY, "io.confluent.kafka.serializers.subject.TopicRecordNameStrategy");
+        config.put(AbstractKafkaAvroSerDeConfig.VALUE_SUBJECT_NAME_STRATEGY, "io.confluent.kafka.serializers.subject.TopicRecordNameStrategy");
+
+        return config;
+    }
+
     public static Topology createTopology() {
         StreamsBuilder builder = new StreamsBuilder();
 
@@ -109,28 +130,8 @@ public class SingleTopicJoinStream implements CommandLineRunner {
         return builder.build();
     }
 
-    private static Properties buildConfig() {
-        Properties config = new Properties();
-        config.put(StreamsConfig.APPLICATION_ID_CONFIG, "single-topic-join-stream");
-        config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:19092,localhost:29092,localhost:39092");
-        config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
-        config.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
-        config.put(StreamsConfig.TOPOLOGY_OPTIMIZATION, "all");
-        config.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, 3);
-        config.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0); // disable caching
-        config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        config.put(ProducerConfig.ACKS_CONFIG, "all");
-        config.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 1);
-        config.put(ProducerConfig.RETRIES_CONFIG, "2147483647");
 
-        config.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
-        config.put(AbstractKafkaAvroSerDeConfig.KEY_SUBJECT_NAME_STRATEGY, "io.confluent.kafka.serializers.subject.TopicRecordNameStrategy");
-        config.put(AbstractKafkaAvroSerDeConfig.VALUE_SUBJECT_NAME_STRATEGY, "io.confluent.kafka.serializers.subject.TopicRecordNameStrategy");
-
-        return config;
-    }
-
-    private void printTopology(Topology topology) {
+    private static void printTopology(Topology topology) {
         log.info("---PRINTING TOPOLOGY---");
         log.info(topology.describe().toString());
         log.info("---END TOPOLOGY---");
