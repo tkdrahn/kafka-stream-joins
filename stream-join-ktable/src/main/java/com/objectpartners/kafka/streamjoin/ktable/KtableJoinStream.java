@@ -4,6 +4,7 @@ import com.objectpartners.kafka.streamjoin.model.input.Email;
 import com.objectpartners.kafka.streamjoin.model.input.EmailKey;
 import com.objectpartners.kafka.streamjoin.model.input.EmailType;
 import com.objectpartners.kafka.streamjoin.model.input.PersonName;
+import com.objectpartners.kafka.streamjoin.model.input.PersonNameKey;
 import com.objectpartners.kafka.streamjoin.model.input.PhoneType;
 import com.objectpartners.kafka.streamjoin.model.input.Telephone;
 import com.objectpartners.kafka.streamjoin.model.input.TelephoneKey;
@@ -75,8 +76,13 @@ public class KtableJoinStream implements CommandLineRunner {
 
         KStream<EmailKey, Email> emailStream = builder.stream("email-topic");
         KStream<TelephoneKey, Telephone> phoneStream = builder.stream("phone-topic");
+        KStream<PersonNameKey, PersonName> nameStream = builder.stream("name-topic");
 
         // CO-PARTITION INPUT TOPICS
+        nameStream
+                .selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build())
+                .to("name-by-person-topic");
+
         // naive approach - this won't work properly as different phone types will "overwrite" each other
         phoneStream
                 .selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build())
@@ -99,7 +105,7 @@ public class KtableJoinStream implements CommandLineRunner {
         KTable<PersonKey, Email> homeEmailTable = builder.table("home-email-by-person-topic");
         KTable<PersonKey, Email> officeEmailTable = builder.table("office-email-by-person-topic");
         KTable<PersonKey, Telephone> phoneTable = builder.table("phone-by-person-topic");
-        KTable<PersonKey, PersonName> nameTable = builder.table("name-topic");
+        KTable<PersonKey, PersonName> nameTable = builder.table("name-by-person-topic");
 
         // APPLY JOINS
         KTable<PersonKey, EmailAggregate> emailAggregateTable = officeEmailTable.outerJoin(
