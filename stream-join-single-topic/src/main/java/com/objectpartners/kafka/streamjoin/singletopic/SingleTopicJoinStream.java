@@ -82,15 +82,15 @@ public class SingleTopicJoinStream implements CommandLineRunner {
         KStream<PersonNameKey, PersonName> nameStream = builder.stream("name-topic");
 
         emailStream
-                .selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build())
+                .selectKey((k, v) -> buildPersonKey(k.getPersonId()))
                 .to("person-aggregate-topic");
 
         phoneStream
-                .selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build())
+                .selectKey((k, v) -> buildPersonKey(k.getPersonId()))
                 .to("person-aggregate-topic");
 
         nameStream
-                .selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build())
+                .selectKey((k, v) -> buildPersonKey(k.getPersonId()))
                 .to("person-aggregate-topic");
 
 
@@ -141,6 +141,10 @@ public class SingleTopicJoinStream implements CommandLineRunner {
         log.info("---PRINTING TOPOLOGY---");
         log.info(topology.describe().toString());
         log.info("---END TOPOLOGY---");
+    }
+
+    private static PersonKey buildPersonKey(String personId) {
+        return PersonKey.newBuilder().setPersonId(personId).build();
     }
 }
 
