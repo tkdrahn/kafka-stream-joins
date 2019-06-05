@@ -1,9 +1,9 @@
 package com.objectpartners.kafka.streamjoin.generator.controller
 
 import com.objectpartners.kafka.streamjoin.generator.api.CreatePhoneRequest
+import com.objectpartners.kafka.streamjoin.model.input.Phone
+import com.objectpartners.kafka.streamjoin.model.input.PhoneKey
 import com.objectpartners.kafka.streamjoin.model.input.PhoneType
-import com.objectpartners.kafka.streamjoin.model.input.Telephone
-import com.objectpartners.kafka.streamjoin.model.input.TelephoneKey
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -29,8 +29,8 @@ class PhoneController {
 
     @RequestMapping(method = RequestMethod.POST)
     String publish(@RequestBody @Valid CreatePhoneRequest request) {
-        TelephoneKey key = TelephoneKey.newBuilder().setPersonId(request.key.personId).setType(PhoneType.valueOf(request.key.type.name())).build()
-        Telephone value = Telephone.newBuilder().setPhoneNumber(request.value.phoneNumber).setType(PhoneType.valueOf(request.key.type.name())).build()
+        PhoneKey key = PhoneKey.newBuilder().setPersonId(request.key.personId).setType(PhoneType.valueOf(request.key.type.name())).build()
+        Phone value = Phone.newBuilder().setPhoneNumber(request.value.phoneNumber).setType(PhoneType.valueOf(request.key.type.name())).build()
         RecordMetadata meta = producer.send(new ProducerRecord<SpecificRecord, SpecificRecord>('phone-topic', key, value)).get()
         return meta.toString()
     }

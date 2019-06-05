@@ -1,6 +1,6 @@
 {
     "type": "record",
-    "name": "TelephoneKey",
+    "name": "PhoneKey",
     "namespace": "com.objectpartners.kafka.streamjoin.model.input",
     "fields": [
         {

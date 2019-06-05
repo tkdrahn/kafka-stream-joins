@@ -5,11 +5,12 @@ import com.objectpartners.kafka.streamjoin.model.input.EmailKey;
 import com.objectpartners.kafka.streamjoin.model.input.EmailType;
 import com.objectpartners.kafka.streamjoin.model.input.PersonName;
 import com.objectpartners.kafka.streamjoin.model.input.PersonNameKey;
+import com.objectpartners.kafka.streamjoin.model.input.Phone;
+import com.objectpartners.kafka.streamjoin.model.input.PhoneKey;
 import com.objectpartners.kafka.streamjoin.model.input.PhoneType;
-import com.objectpartners.kafka.streamjoin.model.input.Telephone;
-import com.objectpartners.kafka.streamjoin.model.input.TelephoneKey;
 import com.objectpartners.kafka.streamjoin.model.intermediate.EmailAggregate;
 import com.objectpartners.kafka.streamjoin.model.intermediate.EmailPhoneAggregate;
+import com.objectpartners.kafka.streamjoin.model.intermediate.PhoneAggregate;
 import com.objectpartners.kafka.streamjoin.model.output.Person;
 import com.objectpartners.kafka.streamjoin.model.output.PersonKey;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
@@ -72,42 +73,70 @@ public class KtableJoinStream implements CommandLineRunner {
     }
 
     public static Topology createTopology() {
-        StreamsBuilder builder = new StreamsBuilder();
+        // ===========================================================================================
+        // STREAM RAW TOPICS
+        // ===========================================================================================
 
+        StreamsBuilder builder = new StreamsBuilder();
         KStream<EmailKey, Email> emailStream = builder.stream("email-topic");
-        KStream<TelephoneKey, Telephone> phoneStream = builder.stream("phone-topic");
+        KStream<PhoneKey, Phone> phoneStream = builder.stream("phone-topic");
         KStream<PersonNameKey, PersonName> nameStream = builder.stream("name-topic");
 
+        // ===========================================================================================
         // CO-PARTITION INPUT TOPICS
+        // ===========================================================================================
+
+        // 1-to-1 co-partitioning
         nameStream
-                .selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build())
+                .selectKey((k, v) -> buildPersonKey(k.getPersonId()))
                 .to("name-by-person-topic");
 
-        // naive approach - this won't work properly as different phone types will "overwrite" each other
-        phoneStream
-                .selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build())
-                .to("phone-by-person-topic");
-
-        // branch emails into separate topics for each unique key, so we can build a ktable without losing data
-        // alternatively, create an aggregation on the email topic and push the result to a single aggregated-email-by-person-topic
+        // 1-to-many co-partitioning: branching
         KStream<EmailKey, Email>[] emailByTypeStreams = emailStream.branch(
                 (k, v) -> v.getType() == EmailType.HOME,
                 (k, v) -> v.getType() == EmailType.OFFICE
         );
         emailByTypeStreams[0]
-                .selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build())
+                .selectKey((k, v) -> buildPersonKey(k.getPersonId()))
                 .to("home-email-by-person-topic");
         emailByTypeStreams[1]
-                .selectKey((k, v) -> PersonKey.newBuilder().setPersonId(k.getPersonId()).build())
+                .selectKey((k, v) -> buildPersonKey(k.getPersonId()))
                 .to("office-email-by-person-topic");
 
-        // BUILD KTABLES
+        // 1-to-many co-partitioning: aggregation
+        phoneStream
+                .groupBy((k, v) -> buildPersonKey(k.getPersonId()))
+                .aggregate(
+                        // initializer
+                        () -> PhoneAggregate.newBuilder().build(),
+                        // aggregator
+                        (personKey, incomingRecord, aggregate) -> {
+                            if (incomingRecord.getType() == PhoneType.CELL) {
+                                aggregate.setCellNumber(incomingRecord.getPhoneNumber());
+                            }
+                            if (incomingRecord.getType() == PhoneType.LANDLINE) {
+                                aggregate.setLandlineNumber(incomingRecord.getPhoneNumber());
+                            }
+                            return aggregate;
+                        }
+                )
+                .toStream()
+                .to("phone-by-person-topic");
+
+
+        // ===========================================================================================
+        // BUILD K-TABLES
+        // ===========================================================================================
+
         KTable<PersonKey, Email> homeEmailTable = builder.table("home-email-by-person-topic");
         KTable<PersonKey, Email> officeEmailTable = builder.table("office-email-by-person-topic");
-        KTable<PersonKey, Telephone> phoneTable = builder.table("phone-by-person-topic");
+        KTable<PersonKey, PhoneAggregate> phoneTable = builder.table("phone-by-person-topic");
         KTable<PersonKey, PersonName> nameTable = builder.table("name-by-person-topic");
 
+        // ===========================================================================================
         // APPLY JOINS
+        // ===========================================================================================
+
         KTable<PersonKey, EmailAggregate> emailAggregateTable = officeEmailTable.outerJoin(
                 homeEmailTable,
                 // aggregator
@@ -118,14 +147,13 @@ public class KtableJoinStream implements CommandLineRunner {
                                 .build()
         );
 
-        // NOTE - improper phoneTable key means we lose data (only the last record regardless of type is saved)
         KTable<PersonKey, EmailPhoneAggregate> emailPhoneAggregateTable = emailAggregateTable.outerJoin(
                 phoneTable,
                 // aggregator
-                (emailAggregate, phone) ->
+                (emailAggregate, phoneAggregate) ->
                         EmailPhoneAggregate.newBuilder()
                                 .setEmail(emailAggregate)
-                                .setTelephone(phone != null && phone.getType() == PhoneType.CELL ? phone : null)
+                                .setPhone(phoneAggregate)
                                 .build()
         );
 
@@ -136,14 +164,14 @@ public class KtableJoinStream implements CommandLineRunner {
                         Person.newBuilder()
                                 .setHomeEmail(emailPhoneAggregate == null || emailPhoneAggregate.getEmail() == null ? null : emailPhoneAggregate.getEmail().getHomeEmail())
                                 .setOfficeEmail(emailPhoneAggregate == null || emailPhoneAggregate.getEmail() == null ? null : emailPhoneAggregate.getEmail().getOfficeEmail())
-                                .setCellPhoneNumber(emailPhoneAggregate == null || emailPhoneAggregate.getTelephone() == null ? null : emailPhoneAggregate.getTelephone().getPhoneNumber())
+                                .setCellPhoneNumber(emailPhoneAggregate == null || emailPhoneAggregate.getPhone() == null ? null : emailPhoneAggregate.getPhone().getCellNumber())
                                 .setFirstName(personName == null ? null : personName.getFirstName())
                                 .setLastName(personName == null ? null : personName.getLastName())
                                 .build()
         );
 
-        personTable.toStream().to("person-topic");
 
+        personTable.toStream().to("person-topic");
         return builder.build();
     }
 
@@ -151,6 +179,10 @@ public class KtableJoinStream implements CommandLineRunner {
         log.info("---PRINTING TOPOLOGY---");
         log.info(topology.describe().toString());
         log.info("---END TOPOLOGY---");
+    }
+
+    private static PersonKey buildPersonKey(String personId) {
+        return PersonKey.newBuilder().setPersonId(personId).build();
     }
 
 }

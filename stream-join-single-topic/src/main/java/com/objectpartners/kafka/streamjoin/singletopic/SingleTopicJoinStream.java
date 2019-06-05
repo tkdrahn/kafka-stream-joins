@@ -6,8 +6,8 @@ import com.objectpartners.kafka.streamjoin.model.input.EmailType;
 import com.objectpartners.kafka.streamjoin.model.input.PersonName;
 import com.objectpartners.kafka.streamjoin.model.input.PersonNameKey;
 import com.objectpartners.kafka.streamjoin.model.input.PhoneType;
-import com.objectpartners.kafka.streamjoin.model.input.Telephone;
-import com.objectpartners.kafka.streamjoin.model.input.TelephoneKey;
+import com.objectpartners.kafka.streamjoin.model.input.Phone;
+import com.objectpartners.kafka.streamjoin.model.input.PhoneKey;
 import com.objectpartners.kafka.streamjoin.model.output.Person;
 import com.objectpartners.kafka.streamjoin.model.output.PersonKey;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
@@ -78,7 +78,7 @@ public class SingleTopicJoinStream implements CommandLineRunner {
 
         // rekey input streams by personId
         KStream<EmailKey, Email> emailStream = builder.stream("email-topic");
-        KStream<TelephoneKey, Telephone> phoneStream = builder.stream("phone-topic");
+        KStream<PhoneKey, Phone> phoneStream = builder.stream("phone-topic");
         KStream<PersonNameKey, PersonName> nameStream = builder.stream("name-topic");
 
         emailStream
@@ -114,10 +114,10 @@ public class SingleTopicJoinStream implements CommandLineRunner {
                                 }
                             }
 
-                            if (incomingRecord instanceof Telephone) {
-                                Telephone newTelephone = (Telephone) incomingRecord;
-                                if (newTelephone.getType() == PhoneType.CELL) {
-                                    aggregate.setCellPhoneNumber(newTelephone.getPhoneNumber());
+                            if (incomingRecord instanceof Phone) {
+                                Phone newPhone = (Phone) incomingRecord;
+                                if (newPhone.getType() == PhoneType.CELL) {
+                                    aggregate.setCellPhoneNumber(newPhone.getPhoneNumber());
                                 }
                             }
 

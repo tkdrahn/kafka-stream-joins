@@ -17,33 +17,6 @@ class EventGenerator {
         SpringApplication.run(EventGenerator, args);
     }
 
-//    @Override
-//    void run(String... args) throws Exception {
-//        Producer producer = new KafkaProducer<EmailKey, Email>(buildConfig());
-//
-//        EmailKey emailKey = EmailKey.newBuilder().setEmailId('email-1').setPersonId('person-1').build()
-//        Email emailValue = Email.newBuilder().setAddress('tim.drahn@objectpartners.com').setType('office').build()
-//
-//        EmailKey emailKey2 = EmailKey.newBuilder().setEmailId('email-2').setPersonId('person-1').build()
-//        Email emailValue2 = Email.newBuilder().setAddress('tim.drahn@personal.com').setType('home').build()
-//
-//        TelephoneKey phoneKey = TelephoneKey.newBuilder().setPersonId('person-1').setTelephoneId('phone-1').build()
-//        Telephone phoneValue = Telephone.newBuilder().setType('cell').setPhoneNumber('123-456-7890').build()
-//
-//        PersonNameKey nameKey = PersonNameKey.newBuilder().setPersonId('person-1').build()
-//        PersonName nameValue = PersonName.newBuilder().setFirstName('Test').setLastName('Person').build()
-//
-//        ProducerRecord<EmailKey, Email> emailRecord = new ProducerRecord<>('email-topic', emailKey, emailValue)
-//        ProducerRecord<EmailKey, Email> emailRecord2 = new ProducerRecord<>('email-topic', emailKey2, emailValue2)
-//        ProducerRecord<TelephoneKey, Telephone> phoneRecord = new ProducerRecord<>('phone-topic', phoneKey, phoneValue)
-//        ProducerRecord<PersonNameKey, PersonName> nameRecord = new ProducerRecord<>('name-topic', nameKey, nameValue)
-//
-//        producer.send(emailRecord).get()
-//        producer.send(emailRecord2).get()
-//        producer.send(phoneRecord).get()
-//        producer.send(nameRecord).get()
-//    }
-
     @Bean
     Producer producer() {
         return new KafkaProducer<SpecificRecord, SpecificRecord>(buildConfig());
