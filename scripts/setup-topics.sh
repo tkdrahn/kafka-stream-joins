@@ -4,7 +4,7 @@
 
 kafka-topics \
 --zookeeper localhost:2181 \
---partitions 1 \
+--partitions 3 \
 --replication-factor 3 \
 --topic email-topic \
 --create
