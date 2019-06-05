@@ -1,5 +1,11 @@
 # kafka-demo
 
+### Start a docker-compose (not part of this project)
+
+### Create topics
+
+    ./scripts/setup-topics.sh
+
 ### Start the rest api
 
      ./gradlew :event-generator:run
